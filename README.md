@@ -86,8 +86,8 @@ textures: {
 
 ## Где сайт и как его обновить
 
-Сайт опубликован на GitHub Pages: **https://kozypot.github.io/passport-lottery/**
-Файлы — в репозитории https://github.com/kozypot/passport-lottery (аккаунт `kozypot`).
+Сайт опубликован на GitHub Pages: **https://passport-lottery.github.io/**
+Файлы — в репозитории https://github.com/passport-lottery/passport-lottery.github.io (организация `passport-lottery`, владелец — аккаунт `kozypot`).
 QR-код для слайда — в папке `презентация/qr`.
 
 Обновить после правок (в папке `site`, нужен установленный `git` и вход в GitHub):
