@@ -1,0 +1,364 @@
+/* Паспорт как лотерея жизни — стили.
+   Сверху закреплённый скроллом паспорт, который открывается и листается разворотами;
+   ниже — полные тексты разделов. */
+:root{
+  --paper:#e9ece2; --paper-2:#dfe4d6; --ink:#1d2321; --ink-soft:#4c5651;
+  --line:#c3cbbd; --guill:rgba(60,110,95,.10);
+  --stamp-1:#7a2f8f; --stamp-2:#1f5a9e; --stamp-3:#a3322a; --stamp-4:#2e6b45;
+  --cover:#5b1420; --cover-2:#3f0d16; --gold:#d6b46a; --gold-2:#b38f45;
+  --page:#f4f1e4; --page-ink:#26302c; --page-soft:#6a7470; --page-line:#d6dacb;
+  --display:"Alegreya SC", "Georgia", serif;
+  --body:"PT Sans", "Segoe UI", system-ui, sans-serif;
+  --mono:"PT Mono", "Consolas", ui-monospace, monospace;
+  --sec-mix:0%;            /* насколько осветлять цвет раздела (тёмная тема) */
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#131816; --paper-2:#1a201d; --ink:#e5e8df; --ink-soft:#9aa59f;
+  --line:#2c3531; --guill:rgba(140,200,175,.07);
+  --stamp-1:#c58ad6; --stamp-2:#7fb0ea; --stamp-3:#e98a7f; --stamp-4:#7fc79a;
+  --sec-mix:48%;
+  color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --paper:#131816; --paper-2:#1a201d; --ink:#e5e8df; --ink-soft:#9aa59f;
+  --line:#2c3531; --guill:rgba(140,200,175,.07);
+  --stamp-1:#c58ad6; --stamp-2:#7fb0ea; --stamp-3:#e98a7f; --stamp-4:#7fc79a;
+  --sec-mix:48%;
+  color-scheme:dark;}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  background:var(--paper); color:var(--ink); font:400 17px/1.6 var(--body);
+  background-image:
+    repeating-radial-gradient(circle at 20% 30%, transparent 0 14px, var(--guill) 14px 15px),
+    repeating-radial-gradient(circle at 80% 70%, transparent 0 19px, var(--guill) 19px 20px);
+  overflow-x:hidden;
+}
+a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--stamp-2);outline-offset:3px}
+::selection{background:color-mix(in srgb, var(--stamp-1) 28%, transparent);color:inherit}
+a{text-underline-offset:.18em}
+audio{accent-color:var(--stamp-1)}
+.wrap{max-width:860px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left,0px));padding-right:max(16px, env(safe-area-inset-right,0px))}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- первый экран: паспорт ---------- */
+.opener{height:300vh;position:relative}
+.stage{position:sticky;top:0;height:100vh;height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;overflow:hidden;
+  padding-left:max(16px, env(safe-area-inset-left,0px));padding-right:max(16px, env(safe-area-inset-right,0px))}
+.book{--w:min(300px, 64vw);width:var(--w);aspect-ratio:88/125;position:relative;perspective:2000px;will-change:transform;touch-action:pan-y}
+@media (min-width:680px){.book{--w:min(320px, 40vw)}}
+.base{position:absolute;inset:0;border-radius:4px 12px 12px 4px;background:var(--page);box-shadow:0 20px 50px rgba(0,0,0,.25)}
+.leaf,.cover{position:absolute;inset:0;transform-origin:left center;transform-style:preserve-3d;border-radius:4px 12px 12px 4px}
+.leaf{transition:transform .85s cubic-bezier(.45,.05,.2,1), opacity .4s;pointer-events:none}
+.leaf.current .lf-front{pointer-events:auto}
+.leaf.flipped{transform:rotateY(-180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:inherit;overflow:hidden}
+.lf-front,.lf-back,.back{background:var(--page);color:var(--page-ink);
+  background-image:
+    repeating-radial-gradient(circle at 50% 120%, transparent 0 9px, rgba(60,110,95,.07) 9px 10px),
+    linear-gradient(90deg, rgba(0,0,0,.07), transparent 9%),
+    var(--paper-tex, none);
+  background-size:auto, auto, 320px auto;}
+.lf-front{padding:18px 16px 14px 20px;display:flex;flex-direction:column;gap:10px}
+.lf-back,.back{transform:rotateY(180deg);border-radius:12px 4px 4px 12px;padding:18px 20px 14px 16px;display:flex;flex-direction:column;gap:10px;
+  background-image:
+    repeating-radial-gradient(circle at 50% 120%, transparent 0 9px, rgba(60,110,95,.07) 9px 10px),
+    linear-gradient(270deg, rgba(0,0,0,.07), transparent 9%),
+    var(--paper-tex, none);
+  background-size:auto, auto, 320px auto;}
+.passed-img{position:absolute;right:7%;top:38%;width:54%;height:auto;transform:rotate(var(--vr,-4deg));opacity:.7;mix-blend-mode:multiply;pointer-events:none}
+/* бумага страниц картинкой: своя защитная сетка уже на ней, поэтому кодовую убираем;
+   растягиваем на всю страницу, чтобы не было стыков плитки */
+.tex-paper .lf-front,.tex-paper .pf-inner.lf-front{background-image:linear-gradient(90deg, rgba(0,0,0,.07), transparent 9%), var(--paper-tex);background-size:auto, cover}
+.tex-paper .lf-back,.tex-paper .back{background-image:linear-gradient(270deg, rgba(0,0,0,.07), transparent 9%), var(--paper-tex);background-size:auto, cover}
+.visa-img{position:absolute;left:var(--vx,26%);top:var(--vy,46%);height:auto;transform:rotate(var(--vr,-8deg));opacity:.82;mix-blend-mode:multiply;pointer-events:none}
+.front{background:radial-gradient(120% 90% at 30% 20%, var(--cover), var(--cover-2));color:var(--gold);
+  display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:34px 18px 26px;text-align:center;
+  box-shadow:inset 0 0 0 2px rgba(214,180,106,.18), 0 24px 60px rgba(0,0,0,.35)}
+/* кожа обложки (картинка уже бордовая): сверху только мягкий свет и затемнение к краям */
+.tex-cover .front{background:
+  radial-gradient(120% 90% at 30% 20%, rgba(255,235,235,.08), rgba(25,0,6,.42)),
+  var(--cover-tex) center/cover}
+.front::before{content:"";position:absolute;inset:0;background:var(--emboss-tex, none) center/107% 104% no-repeat;pointer-events:none}
+/* с золотой рамкой текст уходит внутрь неё: розетки сверху, снизу и по бокам не перекрываются */
+.tex-emboss .front{padding:17% 17% 20%}
+.tex-emboss .front .country{font-size:10px;letter-spacing:.18em}
+.tex-emboss .front h1{font-size:clamp(20px,5.8vw,26px)}
+.tex-emboss .front .label{font-size:13px}
+.tex-emboss .front .bottom{gap:9px}
+.front > *{position:relative}
+.front .country{font:700 12px/1.35 var(--display);letter-spacing:.22em;text-transform:uppercase}
+/* золото: градиент через background-clip:text + диагональный блик (первый слой) */
+.front h1{font:800 clamp(22px,7vw,30px)/1.08 var(--display);margin:0;letter-spacing:.04em;text-wrap:balance;
+  background:
+    linear-gradient(105deg, transparent 42%, rgba(255,248,220,.95) 50%, transparent 58%) 160% 0/260% 100% no-repeat,
+    linear-gradient(180deg,#f0d998,var(--gold) 45%,var(--gold-2));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.book.idle .front h1{animation:glint 6s cubic-bezier(.45,.05,.35,1) 1.2s infinite}
+.book.idle .front .chip{animation:chipglint 6s ease-out 1.2s infinite}
+@keyframes glint{0%{background-position:160% 0,0 0}26%,100%{background-position:-60% 0,0 0}}
+@keyframes chipglint{0%,20%{filter:none}26%{filter:brightness(1.7) drop-shadow(0 0 3px rgba(255,236,180,.6))}40%,100%{filter:none}}
+/* «дыхание» закрытого паспорта: наклон задаёт JS (курсор на ПК, покачивание на телефоне) */
+.tilt.on{transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg))}
+/* тень разворота растёт по мере открытия (меняется только прозрачность) */
+.spread-shadow{position:absolute;top:0;left:-100%;width:200%;height:100%;border-radius:12px;opacity:0;pointer-events:none;
+  box-shadow:0 34px 80px -10px rgba(0,0,0,.42), 0 8px 18px rgba(0,0,0,.12)}
+.front .label{font:700 15px/1 var(--display);letter-spacing:.35em;text-transform:uppercase}
+.front .bottom{display:flex;flex-direction:column;align-items:center;gap:12px}
+.chip{width:34px;height:22px;border:1.5px solid var(--gold);border-radius:4px;position:relative;opacity:.85}
+.chip::before{content:"";position:absolute;inset:5px 9px;border:1.5px solid var(--gold);border-radius:50%}
+
+.pghead{display:flex;justify-content:space-between;font:400 9.5px/1 var(--mono);letter-spacing:.14em;color:var(--page-soft);text-transform:uppercase}
+.pgnum{margin-top:auto;font:400 10px/1 var(--mono);color:var(--page-soft);text-align:center;letter-spacing:.2em}
+.fld{font:400 9.5px/1.2 var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--page-soft)}
+.val{font:700 15px/1.25 var(--body);color:var(--page-ink)}
+.val.sm{font-size:14px}
+.val.thin{font-weight:400}
+.holder{display:flex;gap:12px;align-items:flex-start}
+.holder-fields{display:flex;flex-direction:column;gap:7px}
+.photo{width:62px;aspect-ratio:3/4;border-radius:3px;background:linear-gradient(160deg,#c9cfbf,#aab3a2);display:grid;place-items:center;font:700 21px var(--display);color:#5d665f;flex:none;overflow:hidden}
+.photo img{width:100%;height:100%;object-fit:cover}
+.mrz{margin-top:auto;font:400 9px/1.45 var(--mono);color:#3a423e;word-break:break-all;letter-spacing:.05em;background:rgba(255,255,255,.5);padding:6px;border-radius:3px}
+.notice-ru{margin-top:auto}
+.notice-en{color:var(--page-soft)}
+.notice-mark{margin-bottom:auto}
+
+/* штампы */
+.stamp{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;cursor:pointer;
+  border:2px solid currentColor;border-radius:10px;font:700 11.5px/1.12 var(--display);letter-spacing:.05em;text-align:center;padding:4px;
+  background:none;mix-blend-mode:multiply;opacity:.86;transition:transform .2s, opacity .2s;min-width:0}
+.stamp small{font:400 8.5px/1 var(--mono);letter-spacing:.08em;pointer-events:none}
+.stamp.s0{border-radius:50%;transform:rotate(-6deg)}
+.stamp.s1{transform:rotate(4deg)}
+.stamp.s2{border-style:double;border-width:4px;transform:rotate(3deg)}
+.stamp.s3{border-radius:50% 50% 12px 12px;transform:rotate(-4deg)}
+.stamps{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:1fr;gap:9px 10px;flex:1;min-height:0}
+.stamps .stamp:hover,.stamps .stamp:focus-visible{opacity:1;transform:rotate(0) scale(1.06);outline:none}
+.bigstamp{align-self:flex-start;padding:10px 14px;font-size:13px;pointer-events:none}
+.ghost{position:absolute;right:16%;top:38%;width:46%;aspect-ratio:1;font-size:12px;opacity:.28;pointer-events:none}
+.sec-t{font:800 24px/1.05 var(--display);margin:4px 0 0;text-wrap:balance;color:var(--page-ink)}
+.sec-p{font:400 14px/1.45 var(--body);margin:0;color:var(--page-ink)}
+/* «Читать раздел»: настоящая кнопка во всю ширину страницы со стрелкой, а не мелкая ссылка */
+.more{align-self:stretch;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:6px;padding:7px 7px 7px 16px;min-height:42px;
+  background:var(--page-ink);color:var(--page);border-radius:999px;text-decoration:none;font:700 13.5px/1.1 var(--body);letter-spacing:.01em;transition:transform .15s}
+.more:hover{transform:translateY(-1px)}
+.more:focus-visible{outline:2px solid #1f5a9e;outline-offset:3px}
+.more-arrow{flex:none;width:28px;height:28px;border-radius:50%;background:var(--c,#7a2f8f);position:relative;display:block}
+.more-arrow::before{content:"";position:absolute;left:50%;top:50%;width:7px;height:7px;border-right:2px solid #fff;border-bottom:2px solid #fff;transform:translate(-50%,-70%) rotate(45deg);animation:nudge 1.7s ease-in-out infinite}
+@keyframes nudge{0%,100%{transform:translate(-50%,-70%) rotate(45deg)}50%{transform:translate(-50%,-30%) rotate(45deg)}}
+.more-hint{font:400 9.5px/1.25 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--page-soft);text-align:center}
+.page-hint::before{display:none}
+.page-hint{white-space:normal;text-align:center;width:max-content;max-width:calc(100vw - 32px)}
+.page-hint.on{opacity:1}
+.visas{font:700 22px/1 var(--display);letter-spacing:.3em;color:rgba(38,48,44,.13);text-align:center;margin-top:6px}
+
+/* StPageFlip: книга в экранном размере разворота поверх своего движка */
+.book.off{visibility:hidden}
+.flip-host{position:absolute;left:0;top:0;visibility:hidden;pointer-events:none;z-index:5}
+.flip-host.on{visibility:visible;pointer-events:auto}
+.flip-host::before{content:"";position:absolute;inset:0;border-radius:12px;
+  box-shadow:0 34px 80px -10px rgba(0,0,0,.42), 0 8px 18px rgba(0,0,0,.12)}
+.pf-page{overflow:hidden}
+.pf-inner{inset:0 auto auto 0;width:var(--pw);height:var(--ph);transform:scale(var(--s));transform-origin:0 0;backface-visibility:visible;-webkit-backface-visibility:visible}
+.pf-inner.lf-front{border-radius:4px 12px 12px 4px}
+.pf-inner.lf-back,.pf-inner.back{transform:scale(var(--s))}
+
+.controls{display:flex;align-items:center;gap:14px;font:400 12px/1 var(--mono);letter-spacing:.14em;color:var(--ink-soft);transition:opacity .3s}
+.controls[aria-hidden="true"]{opacity:0;pointer-events:none}
+.nav{width:42px;height:42px;border-radius:50%;border:1.5px solid var(--ink-soft);background:transparent;color:var(--ink);font:400 20px/1 var(--body);cursor:pointer;display:grid;place-items:center}
+.nav:disabled{opacity:.3;cursor:default}
+.counter{min-width:64px;text-align:center;font-variant-numeric:tabular-nums}
+.controls{position:relative}
+/* «Потяните страницу»: линия-«палец» скользит справа налево, как жест перелистывания */
+.drag-hint{position:absolute;left:50%;top:calc(100% + 14px);transform:translateX(-50%);display:flex;align-items:center;gap:10px;white-space:nowrap;
+  font:400 11px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft);opacity:0;transition:opacity .5s;pointer-events:none}
+.drag-hint::before{content:"";width:26px;height:1px;background:currentColor;animation:swipe 1.8s cubic-bezier(.45,.05,.35,1) infinite}
+.drag-hint.on{opacity:1}
+.drag-hint.gone{opacity:0}
+@keyframes swipe{0%{transform:scaleX(0);transform-origin:right}45%{transform:scaleX(1);transform-origin:right}55%{transform-origin:left}100%{transform:scaleX(0);transform-origin:left}}
+/* подсказка сразу под паспортом: тонкая линия «каплет» вниз и маленькая надпись.
+   Стоит в одном слоте с кнопками листания: пока паспорт закрыт — видна подсказка, открыт — кнопки */
+.under{display:grid;place-items:center;min-height:62px}
+.under > *{grid-area:1/1}
+.hint{display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;color:var(--ink-soft)}
+.hint-line{display:block;width:1px;height:30px;background:currentColor;opacity:.75;transform-origin:top;animation:drip 2s cubic-bezier(.45,.05,.35,1) infinite}
+.hint-text{font:400 12px/1 var(--mono);letter-spacing:.22em;text-transform:uppercase}
+@keyframes drip{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+
+/* ---------- разделы ---------- */
+section.doc{padding-block:72px;border-top:1px dashed var(--line);
+  --sec-ink:color-mix(in srgb, var(--sec, var(--ink)), #fff var(--sec-mix))}
+.eyebrow{color:var(--sec-ink);font:400 12px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase;display:inline-flex;gap:10px;align-items:center;padding:6px 10px;border:1.5px solid currentColor;border-radius:999px}
+h3{font:800 clamp(30px,6vw,46px)/1.05 var(--display);margin:16px 0 14px;text-wrap:balance;letter-spacing:.01em}
+p{max-width:62ch;margin:0 0 14px}
+.muted{color:var(--ink-soft)}
+.draft{font:400 13px/1.5 var(--mono);color:var(--ink-soft);border-left:3px solid var(--line);padding-left:12px;margin-top:18px;max-width:62ch}
+.draft a{color:inherit}
+/* «Вернуться к паспорту» в конце раздела — заметная кнопка-контур */
+.back-up{display:inline-flex;align-items:center;gap:10px;margin-top:26px;padding:11px 18px 11px 14px;min-height:44px;
+  border:1.5px solid var(--ink);border-radius:999px;color:var(--ink);text-decoration:none;font:700 14.5px/1 var(--body);transition:background .15s,color .15s}
+.back-up:hover{background:var(--ink);color:var(--paper)}
+.tp-arrow{width:8px;height:8px;border-left:2px solid currentColor;border-top:2px solid currentColor;transform:translateY(2px) rotate(45deg);flex:none}
+/* плавающая кнопка «К паспорту»: правый нижний угол, видна только в разделах */
+.to-passport{position:fixed;right:max(16px, env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:50;
+  display:flex;align-items:center;gap:10px;padding:8px 18px 8px 9px;min-height:48px;border-radius:999px;
+  background:var(--ink);color:var(--paper);text-decoration:none;font:700 14.5px/1 var(--body);
+  box-shadow:0 10px 28px rgba(0,0,0,.28), 0 2px 6px rgba(0,0,0,.18);
+  opacity:0;transform:translateY(14px);pointer-events:none;transition:opacity .25s, transform .25s cubic-bezier(.16,1,.3,1)}
+.to-passport.show{opacity:1;transform:none;pointer-events:auto}
+.to-passport:focus-visible{outline:3px solid var(--stamp-2);outline-offset:3px}
+/* значок: маленький бордовый паспорт с золотым чипом */
+.tp-pass{width:22px;height:30px;border-radius:2px 5px 5px 2px;background:radial-gradient(120% 90% at 30% 20%, var(--cover), var(--cover-2));position:relative;flex:none;
+  box-shadow:inset 0 0 0 1px rgba(214,180,106,.35)}
+.tp-pass::after{content:"";position:absolute;left:50%;bottom:6px;width:10px;height:7px;transform:translateX(-50%);border:1.3px solid var(--gold);border-radius:2px}
+
+/* лотерея */
+.lottery{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:28px;align-items:center;margin-top:24px}
+@media (max-width:640px){.lottery{grid-template-columns:1fr}}
+/* мини-паспорт лотереи: цвет страны + серая фактура кожи (overlay) + свет и затемнение к краям */
+.mini{width:min(200px,60vw);aspect-ratio:88/125;margin:0 auto;border-radius:4px 10px 10px 4px;padding:20px 12px 18px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;text-align:center;
+  color:var(--gold);background-color:var(--cover);
+  background-image:radial-gradient(120% 90% at 30% 20%, rgba(255,255,255,.07), rgba(0,0,0,.38)), url("../assets/img/leather-gray.webp");
+  background-size:auto, cover;background-blend-mode:normal, overlay;
+  transition:background-color .25s;box-shadow:0 18px 40px rgba(0,0,0,.28);overflow:hidden}
+.mini .m-top{font:700 10.5px/1.35 var(--display);letter-spacing:.14em;text-transform:uppercase;min-height:4em;text-wrap:balance}
+.mini .m-label{font:700 13px/1.3 var(--display);letter-spacing:.24em;text-transform:uppercase;text-wrap:balance}
+.mini .ns{letter-spacing:.06em;font-family:system-ui, sans-serif;font-weight:700}
+.mini .m-bottom{display:flex;flex-direction:column;align-items:center;gap:10px;min-height:5.2em;justify-content:flex-end}
+/* нейтральный знак вместо герба: глобус с меридианами */
+.mini .m-emblem{width:46px;aspect-ratio:1;border:1.5px solid var(--gold);border-radius:50%;position:relative;opacity:.9;flex:none;
+  background:linear-gradient(var(--gold),var(--gold)) center/100% 1.5px no-repeat}
+.mini .m-emblem::before{content:"";position:absolute;inset:-1.5px 12px;border:1.5px solid var(--gold);border-radius:50%}
+.mini .m-emblem::after{content:"";position:absolute;inset:9px -1.5px;border-top:1.5px solid var(--gold);border-bottom:1.5px solid var(--gold);border-radius:50%/40%}
+.result{display:flex;flex-direction:column;gap:14px;min-width:0}
+.drum{font:800 clamp(26px,5vw,36px)/1.1 var(--display);min-height:1.2em}
+.big{font:700 15px/1.4 var(--body)}
+.metrics{display:flex;flex-direction:column;gap:14px}
+.metric{display:flex;flex-direction:column;gap:6px}
+.m-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font:700 14px/1.3 var(--body)}
+.m-src{font:400 11px/1.3 var(--mono);color:var(--ink-soft);letter-spacing:.04em}
+.m-rank{font:400 12px/1.3 var(--mono);color:var(--ink-soft)}
+.bar{display:grid;grid-template-columns:minmax(0,1fr) 52px;gap:10px;align-items:center;font:700 14px/1 var(--mono);font-variant-numeric:tabular-nums}
+.track{height:14px;background:var(--paper-2);border-radius:3px;overflow:hidden;border:1px solid var(--line)}
+.fill{height:100%;width:0;background:var(--stamp-2);transition:width .9s cubic-bezier(.2,.8,.2,1)}
+.fill.f-a{background:var(--stamp-4)}
+.fill.f-u{background:var(--stamp-1)}
+.btn{align-self:flex-start;font:700 16px/1 var(--display);letter-spacing:.1em;padding:14px 22px;border-radius:999px;border:2px solid var(--ink);background:var(--ink);color:var(--paper);cursor:pointer;transition:transform .15s}
+.btn:hover{transform:translateY(-2px)}
+.btn:focus-visible{outline:3px solid var(--stamp-2);outline-offset:3px}
+.btn:disabled{opacity:.6;cursor:default;transform:none}
+
+/* история */
+.tl{list-style:none;padding:0;margin:20px 0 0;display:flex;flex-direction:column;border-left:2px solid var(--line)}
+.tl li{padding:0 0 22px 20px;position:relative;max-width:62ch}
+.tl li::before{content:"";position:absolute;left:-7px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--paper);border:2px solid var(--sec-ink)}
+.tl b{font:700 18px/1.2 var(--display);display:block;margin-bottom:2px}
+
+/* ---------- блоки полного текста раздела ---------- */
+.doc .wrap > p a,.b-list a{color:var(--sec-ink);text-decoration-thickness:1px}
+.lead{font:400 clamp(18px,2.4vw,21px)/1.5 var(--body);max-width:60ch;margin:0 0 18px;text-wrap:pretty}
+.doc h4{font:700 clamp(21px,3.2vw,26px)/1.15 var(--display);margin:40px 0 12px;letter-spacing:.01em;text-wrap:balance;color:var(--ink)}
+.b-list{max-width:62ch;margin:0 0 16px;padding-left:1.3em}
+.b-list li{margin:0 0 8px;padding-left:4px}
+ol.b-list li::marker{font:700 16px var(--display);color:var(--sec-ink)}
+ul.b-list li::marker{color:var(--sec-ink)}
+.b-quote{margin:22px 0 22px;max-width:58ch}
+.b-quote .quote{margin:0}
+.b-quote figcaption{margin-top:10px;font:400 12px/1.45 var(--mono);color:var(--ink-soft);letter-spacing:.04em}
+/* цифры: без карточек, разделены тонкой линией сверху */
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:18px 22px;margin:22px 0 10px}
+.fact{border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:6px}
+.fact b{font:800 clamp(26px,4.4vw,36px)/1.05 var(--display);color:var(--sec-ink);letter-spacing:.01em;font-variant-numeric:tabular-nums}
+.fact span{font:400 14.5px/1.45 var(--body);color:var(--ink-soft)}
+/* «без паспорта / только с паспортом» */
+.rights{margin:24px 0 8px;border-top:1.5px solid var(--ink)}
+.r-row{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1fr) minmax(0,1fr);border-bottom:1px dashed var(--line)}
+.r-row > *{padding:14px 16px 14px 0;font:400 15.5px/1.45 var(--body)}
+.r-head > span{font:400 11px/1.3 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);padding-block:10px}
+.r-sphere b{display:block;font:700 19px/1.2 var(--display)}
+.r-sphere small{display:block;margin-top:4px;font:italic 400 13px/1.35 var(--body);color:var(--ink-soft)}
+.r-no{color:var(--ink-soft)}
+.r-yes{background:var(--paper-2);padding-left:16px !important;font-weight:700 !important;color:var(--ink)}
+.r-head > span:last-child{background:var(--paper-2);padding-left:16px;color:var(--sec-ink)}
+.r-lbl{display:none}
+@media (max-width:640px){
+  .r-head{display:none}
+  .r-row{grid-template-columns:1fr;padding:14px 0}
+  .r-row > *{padding:4px 0}
+  .r-yes{padding:10px 12px !important;margin-top:6px;border-radius:4px}
+  .r-lbl{display:block;font:400 10.5px/1.3 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:3px;font-weight:400}
+  .r-yes .r-lbl{color:var(--sec-ink)}
+}
+/* фотографии документов */
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,210px),1fr));gap:22px 18px;margin:18px 0 20px;align-items:start}
+.gallery.single{grid-template-columns:minmax(0,260px)}
+.gallery figure{margin:0}
+.gallery img{display:block;width:100%;height:auto;border-radius:3px;box-shadow:0 10px 26px rgba(0,0,0,.16), 0 1px 3px rgba(0,0,0,.12)}
+.gallery figcaption{margin-top:9px;font:400 12px/1.45 var(--mono);color:var(--ink-soft)}
+
+/* интервью */
+.film{margin:26px 0 0;max-width:760px}
+.film video{display:block;width:100%;aspect-ratio:16/9;background:#1a201d;border:1px solid var(--line);border-radius:8px}
+.film figcaption{font:400 13px/1.5 var(--mono);color:var(--ink-soft);margin-top:10px;max-width:62ch}
+.film figcaption b{font:700 15px/1.3 var(--display);color:var(--ink);letter-spacing:.02em}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:14px;margin-top:22px;align-items:start}
+.card{border:1px solid var(--line);background:var(--paper-2);border-radius:8px;min-width:0}
+.card[open]{grid-column:1/-1}
+.card summary{list-style:none;cursor:pointer;padding:16px;display:flex;flex-direction:column;gap:6px;border-radius:8px}
+.card summary::-webkit-details-marker{display:none}
+.card .k{font:400 11px/1.4 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft)}
+.card .place{font:700 19px/1.2 var(--display)}
+.card .role{font:400 14px/1.4 var(--body);color:var(--ink-soft)}
+.card .idea{font:400 15px/1.45 var(--body);margin-top:4px}
+.card .toggle{margin-top:6px;font:400 12px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--sec-ink)}
+.card .toggle::before{content:"+ Выдержки"}
+.card[open] .toggle::before{content:"− Свернуть"}
+.excerpts{padding:0 16px 18px;display:flex;flex-direction:column;gap:14px;border-top:1px dashed var(--line);padding-top:16px;margin:0 16px;padding-inline:0}
+.excerpts dl{margin:0;display:flex;flex-direction:column;gap:14px}
+.excerpts dt{font:700 16px/1.4 var(--body);max-width:62ch}
+.excerpts dd{margin:4px 0 0;max-width:62ch}
+.quote{font:italic 400 clamp(19px,3.6vw,23px)/1.45 var(--body);margin:8px 0 0;max-width:56ch;quotes:"«" "»";text-wrap:pretty}
+.quote::before{content:open-quote;color:var(--sec-ink)}
+.quote::after{content:close-quote}
+.card .note{font:400 12px/1.5 var(--mono);color:var(--ink-soft);max-width:62ch;margin:0}
+.audio{border:1px solid var(--line);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:10px;background:var(--paper)}
+.audio audio{width:100%}
+.wave{display:flex;align-items:center;gap:3px;height:48px}
+.wave i{flex:1;background:var(--stamp-1);border-radius:2px;opacity:.75}
+
+footer{padding-block:40px 100px;border-top:1px dashed var(--line);font:400 12px/1.6 var(--mono);color:var(--ink-soft)}
+footer a{color:inherit}
+
+
+/* узкие экраны: страница паспорта там всего 205–240 px шириной — убираем декоративный штамп
+   и слегка поджимаем текст, чтобы кнопка и всё содержимое помещались и ничего не обрезалось */
+@media (max-width:375px){
+  .bigstamp{display:none}
+  .lf-front{gap:8px;padding:16px 14px 12px 18px}
+  .lf-back,.back{padding:16px 18px 12px 14px}
+  .sec-t{font-size:22px}
+  .sec-p{font-size:13.5px}
+  .mrz{font-size:8px;padding:5px;line-height:1.35}
+  .photo{width:54px}
+}
+@media (max-width:340px){
+  .lf-front{gap:6px;padding:14px 12px 10px 16px}
+  .sec-t{font-size:19px;margin:0}
+  .sec-p{font-size:12px;line-height:1.35}
+  .more{min-height:36px;font-size:12px;padding-left:13px}
+  .more-arrow{width:24px;height:24px}
+  .more-hint{display:none}
+  .val{font-size:13px}.val.sm{font-size:12px}
+  .fld{font-size:8.5px}
+  .mrz{font-size:6.5px}
+  .photo{width:44px;font-size:17px}
+  .pghead{font-size:8.5px}
+  .stamp{font-size:10px}.stamp small{font-size:7.5px}
+}
+
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  .hint-line,.more-arrow::before,.book.idle .front h1,.book.idle .front .chip{animation:none}
+  .fill,.mini,.leaf,.stamp,.btn,.to-passport{transition:none}
+}
