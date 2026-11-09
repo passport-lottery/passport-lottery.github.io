@@ -84,20 +84,21 @@ textures: {
 
 Положите совместное фото (портрет 3:4) в `assets/img/holders.webp` и впишите `photo: 'assets/img/holders.webp'` в `SITE.holders`.
 
-## Как выложить сайт
+## Где сайт и как его обновить
 
-**Netlify (проще всего):** зайти на app.netlify.com/drop и перетащить папку `site`. Через минуту будет ссылка.
+Сайт опубликован на GitHub Pages: **https://kozypot.github.io/passport-lottery/**
+Файлы — в репозитории https://github.com/kozypot/passport-lottery (аккаунт `kozypot`).
+QR-код для слайда — в папке `презентация/qr`.
 
-**GitHub Pages:** создать репозиторий (например, `passport-lottery`), загрузить содержимое папки `site`, затем Settings → Pages → Source: ветка `main`, папка `/ (root)`. Адрес: `https://<ник>.github.io/passport-lottery/`.
+Обновить после правок (в папке `site`, нужен установленный `git` и вход в GitHub):
 
-После публикации в `index.html` замените адрес превью на полный, иначе Telegram не покажет картинку:
-
-```html
-<meta property="og:image" content="https://<ваш-адрес>/assets/img/og.jpg">
-<meta property="og:url" content="https://<ваш-адрес>/">
+```
+git add -A
+git commit -m "Что поменяли"
+git push
 ```
 
-QR-код для слайда защиты делается по готовой ссылке в любом генераторе QR (сохранить PNG в высоком разрешении).
+Через 1–2 минуты изменения появятся на сайте. Или загрузите изменённые файлы в репозиторий прямо через сайт github.com (кнопка **Add file → Upload files**).
 
 ## Перед защитой
 
