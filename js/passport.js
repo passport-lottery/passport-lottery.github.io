@@ -51,7 +51,7 @@ var Passport = (function () {
   function buildPages() {
     var h = SITE.holders;
     var photo = h.photo
-      ? '<div class="photo"><img src="' + esc(h.photo) + '" alt="' + esc(h.photoAlt || 'Авторы проекта') + '"></div>'
+      ? '<div class="photo' + (h.photoMark ? ' photo-mark' : '') + '"><img src="' + esc(h.photo) + '" alt="' + esc(h.photoAlt || 'Авторы проекта') + '"></div>'
       : '<div class="photo" aria-hidden="true">' + esc(h.initials) + '</div>';
     var mrz = SITE.mrz.map(esc).join('<br>');
     pages.push({ front:
