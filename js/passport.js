@@ -356,8 +356,9 @@ var Passport = (function () {
     var scale = Math.min(1, (vw - 32) / (2 * w)), s = 1 - (1 - scale) * e;
     book.style.transform = 'translateX(' + (w * 0.5 * e * s) + 'px) scale(' + s + ')';
     hint.style.opacity = String(Math.max(0, 1 - p * 2));
-    // тень разворота растёт по мере открытия
-    shadowEl.style.opacity = e.toFixed(3);
+    // тень разворота проявляется только в самом конце, когда обложка почти легла слева:
+    // раньше она обводила пустое место под левую страницу, и там была видна бледная «панель»
+    shadowEl.style.opacity = Math.max(0, Math.min(1, (e - 0.82) / 0.18)).toFixed(3);
     // блик по золоту — только пока паспорт закрыт
     book.classList.toggle('idle', p < 0.02 && !reduce);
     var fade = Math.max(0, 1 - p * 4);
