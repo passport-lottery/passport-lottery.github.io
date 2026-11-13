@@ -28,12 +28,27 @@
         '<source src="' + esc(VIDEO.src) + '" type="video/mp4">' +
         'Видео не открывается в этом браузере. <a href="' + esc(VIDEO.src) + '">Скачать ролик</a>.' +
       '</video>' +
-      '<figcaption><b>' + esc(VIDEO.title) + '</b> · ' + esc(VIDEO.length) + '<br>' + esc(VIDEO.note) + '</figcaption>' +
+      // название и длина уже в заголовке блока, под роликом — только пояснение
+      '<figcaption>' + esc(VIDEO.note) + '</figcaption>' +
     '</figure>';
   }
 
+  // Видео — отдельным блоком сразу под паспортом, чтобы его увидел каждый
+  function videoSectionHtml() {
+    if (typeof VIDEO === 'undefined' || !VIDEO) return '';
+    return '<section class="doc film-sec" id="video" style="--sec:#2e6b45"><div class="wrap">' +
+      '<span class="eyebrow">Видео · ' + esc(VIDEO.length) + '</span>' +
+      '<h3>' + esc(VIDEO.title) + '</h3>' +
+      '<p class="lead">Мы задаём вопросы, специалисты отвечают. Коротко о главном из наших бесед.</p>' +
+      videoHtml() +
+    '</div></section>';
+  }
+
   function interviewsHtml() {
-    return videoHtml() + '<div class="grid">' + INTERVIEWS.map(function (v) {
+    var toVideo = (typeof VIDEO !== 'undefined' && VIDEO)
+      ? '<a class="to-video" href="#video"><i class="watch-play" aria-hidden="true"></i>Смотреть видео с ответами · ' + esc(VIDEO.clock || VIDEO.length) + '</a>'
+      : '';
+    return toVideo + '<div class="grid">' + INTERVIEWS.map(function (v) {
       var n = (v.n < 10 ? '0' : '') + v.n;
       var excerpts = v.excerpts.map(function (x) {
         return '<div><dt>' + x.q + '</dt><dd>' + x.a + '</dd></div>';
@@ -115,7 +130,7 @@
 
   function renderSections() {
     var main = document.getElementById('sections');
-    main.innerHTML = SECTIONS.map(function (s) {
+    main.innerHTML = videoSectionHtml() + SECTIONS.map(function (s) {
       var n = INTERVIEWS.length;
       var label = s.id === 'interviews' ? n + ' ' + plural(n, 'визит', 'визита', 'визитов') : s.stamp;
       var blocks = s.body || [];
@@ -150,6 +165,26 @@
   /* Плавающая кнопка «К паспорту»: видна, пока читаешь разделы, прячется, когда паспорт на экране.
      Возвращает к открытому паспорту на странице того раздела, который сейчас читаешь. */
   var tp = document.getElementById('to-passport'), opener = document.getElementById('top');
+
+  /* «Смотреть видео» у паспорта и в разделе «Интервью»: плавно к ролику и сразу запустить.
+     play() вызываем прямо в обработчике нажатия — так браузер разрешает звук. */
+  var watch = document.getElementById('watch');
+  var film = document.querySelector('#video video');
+  if (watch && film) {
+    watch.hidden = false;
+    document.getElementById('watch-len').textContent = VIDEO.clock || VIDEO.length;
+  } else if (watch) {
+    watch = null;
+  }
+  document.addEventListener('click', function (ev) {
+    var a = ev.target.closest('a.watch, a.to-video');
+    if (!a || !film) return;
+    ev.preventDefault();
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.getElementById('video').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+    var p = film.play();
+    if (p && p.catch) p.catch(function () {});
+  });
   var sections = [].slice.call(document.querySelectorAll('section.doc'));
   function currentSection() {
     var cur = null, mark = window.innerHeight * 0.4;
@@ -163,6 +198,8 @@
     tp.classList.toggle('show', show);
     tp.setAttribute('aria-hidden', String(!show));
     tp.tabIndex = show ? 0 : -1;
+    // кнопка видео — наоборот: видна, пока на экране паспорт
+    if (watch) watch.classList.toggle('show', !show);
   }
   window.addEventListener('scroll', function () {
     if (!ticking) { ticking = true; requestAnimationFrame(updateTp); }

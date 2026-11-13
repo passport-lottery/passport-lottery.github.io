@@ -208,6 +208,26 @@ p{max-width:62ch;margin:0 0 14px}
   opacity:0;transform:translateY(14px);pointer-events:none;transition:opacity .25s, transform .25s cubic-bezier(.16,1,.3,1)}
 .to-passport.show{opacity:1;transform:none;pointer-events:auto}
 .to-passport:focus-visible{outline:3px solid var(--stamp-2);outline-offset:3px}
+/* «Смотреть видео»: тот же угол, что у «К паспорту», но видна, пока на экране паспорт */
+.watch{position:fixed;right:max(16px, env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:50;
+  display:flex;align-items:center;gap:10px;padding:7px 16px 7px 7px;min-height:48px;border-radius:999px;
+  background:var(--cover);color:#f3e6c8;text-decoration:none;font:700 14.5px/1 var(--body);
+  box-shadow:0 10px 28px rgba(0,0,0,.28), 0 2px 6px rgba(0,0,0,.18), inset 0 0 0 1px rgba(214,180,106,.35);
+  opacity:0;transform:translateY(14px);pointer-events:none;transition:opacity .25s, transform .25s cubic-bezier(.16,1,.3,1)}
+.watch[hidden]{display:none}
+.watch.show{opacity:1;transform:none;pointer-events:auto}
+.watch:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.watch small{font:400 12px/1 var(--mono);letter-spacing:.06em;opacity:.8}
+.watch-play{width:34px;height:34px;border-radius:50%;background:var(--gold);position:relative;flex:none}
+.watch-play::after{content:"";position:absolute;left:13px;top:10px;border-style:solid;border-width:7px 0 7px 11px;border-color:transparent transparent transparent var(--cover)}
+/* ссылка на видео в разделе «Интервью» */
+.to-video{display:inline-flex;align-items:center;gap:12px;margin:8px 0 6px;padding:7px 18px 7px 7px;min-height:48px;border-radius:999px;
+  border:1.5px solid var(--ink);color:var(--ink);text-decoration:none;font:700 14.5px/1.2 var(--body);transition:background .15s,color .15s}
+.to-video:hover{background:var(--ink);color:var(--paper)}
+.to-video .watch-play{width:30px;height:30px}
+.to-video .watch-play::after{left:11px;top:8px;border-width:7px 0 7px 10px}
+.film-sec .film{margin-top:18px}
+
 /* значок: маленький бордовый паспорт с золотым чипом */
 .tp-pass{width:22px;height:30px;border-radius:2px 5px 5px 2px;background:radial-gradient(120% 90% at 30% 20%, var(--cover), var(--cover-2));position:relative;flex:none;
   box-shadow:inset 0 0 0 1px rgba(214,180,106,.35)}
@@ -360,5 +380,5 @@ footer a{color:inherit}
 @media (prefers-reduced-motion: reduce){
   html{scroll-behavior:auto}
   .hint-line,.more-arrow::before,.book.idle .front h1,.book.idle .front .chip{animation:none}
-  .fill,.mini,.leaf,.stamp,.btn,.to-passport{transition:none}
+  .fill,.mini,.leaf,.stamp,.btn,.to-passport,.watch{transition:none}
 }
