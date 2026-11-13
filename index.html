@@ -17,12 +17,43 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
+<!-- Заставка загрузки: бордовая обложка, на которой рисуется глобус. Видна, пока не догрузятся
+     шрифты и текстуры, потом растворяется. Без JS не появляется вовсе. -->
+<script>
+  document.documentElement.classList.add('booting');
+  window.__fontsCss = new Promise(function (r) { window.__fontsCssDone = r; });
+</script>
+<style>
+  html{background:#e9ece2}
+  #boot{display:none}
+  html.booting #boot{display:grid;position:fixed;inset:0;z-index:1000;place-items:center;background:#e9ece2;transition:opacity .32s ease}
+  @media (prefers-color-scheme: dark){html,html.booting #boot{background:#131816}}
+  html.boot-done #boot{opacity:0;pointer-events:none}
+  #boot .bk{width:76px;height:104px;border-radius:4px 9px 9px 4px;display:grid;place-items:center;
+    background:radial-gradient(120% 90% at 30% 20%,#5b1420,#3f0d16);box-shadow:0 14px 30px rgba(0,0,0,.25), inset 0 0 0 1px rgba(214,180,106,.3);
+    opacity:0;animation:boot-in .22s ease-out .15s forwards}
+  #boot svg{width:42px;height:42px;fill:none;stroke:#d6b46a;stroke-width:1.6;stroke-linecap:round}
+  #boot svg *{stroke-dasharray:1;stroke-dashoffset:1;animation:boot-draw .45s cubic-bezier(.65,0,.35,1) forwards}
+  #boot svg :nth-child(1){animation-delay:.2s}
+  #boot svg :nth-child(2){animation-delay:.32s}
+  #boot svg :nth-child(3){animation-delay:.4s}
+  #boot svg :nth-child(4){animation-delay:.46s}
+  #boot svg :nth-child(5){animation-delay:.52s}
+  @keyframes boot-draw{to{stroke-dashoffset:0}}
+  @keyframes boot-in{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion: reduce){#boot .bk,#boot svg *{animation:none;opacity:1;stroke-dashoffset:0}}
+</style>
+<link rel="preload" as="image" href="assets/img/cover-leather.webp" fetchpriority="high">
+<link rel="preload" as="image" href="assets/img/paper.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;700;800&family=PT+Sans:ital,wght@0,400;0,700;1,400&family=PT+Mono&display=swap">
+<!-- Шрифты грузятся без блокировки первой отрисовки: заставку видно сразу -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;700;800&family=PT+Sans:ital,wght@0,400;0,700;1,400&family=PT+Mono&display=swap" media="print" onload="this.media='all';__fontsCssDone()" onerror="__fontsCssDone()">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;700;800&family=PT+Sans:ital,wght@0,400;0,700;1,400&family=PT+Mono&display=swap"></noscript>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+<div id="boot" aria-hidden="true"><div class="bk"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="19" pathLength="1"/><ellipse cx="24" cy="24" rx="8" ry="19" pathLength="1"/><path d="M24 5v38" pathLength="1"/><path d="M5 24h38" pathLength="1"/><path d="M7.6 14.5h32.8M7.6 33.5h32.8" pathLength="1"/></svg></div></div>
 
 <div class="opener" id="top">
   <div class="stage">
@@ -63,5 +94,46 @@
 <script src="js/passport.js"></script>
 <script src="js/lottery.js"></script>
 <script src="js/main.js"></script>
+<script>
+  /* Убрать заставку, когда готовы кожа обложки, бумага и шрифты (шрифты ждём не дольше 1,5 с после
+     картинок). Предел — 4 с после разбора страницы: дальше обложка ровного цвета, кожа подставится сама. */
+  (function () {
+    var d = document.documentElement, done = false;
+    if (!d.classList.contains('booting')) return;
+    function finish() {
+      if (done) return;
+      done = true;
+      d.classList.add('boot-done');
+      setTimeout(function () {
+        var b = document.getElementById('boot');
+        if (b) b.remove();
+        d.classList.remove('booting', 'boot-done');
+      }, 380);
+    }
+    function img(src) {
+      return new Promise(function (r) {
+        if (!src) return r();
+        var i = new Image();
+        i.onload = function () { (i.decode ? i.decode() : Promise.resolve()).then(r, r); };
+        i.onerror = r;
+        i.src = src;
+      });
+    }
+    var tx = (window.SITE && SITE.textures) || {};
+    var fonts = window.__fontsCss.then(function () {
+      if (!document.fonts) return;
+      return Promise.all([
+        document.fonts.load('800 30px "Alegreya SC"'),
+        document.fonts.load('400 16px "PT Sans"'),
+        document.fonts.load('400 12px "PT Mono"')
+      ]).catch(function () {});
+    });
+    function delay(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+    Promise.all([img(tx.cover), img(tx.paper)])
+      .then(function () { return Promise.race([fonts, delay(1500)]); })
+      .then(finish, finish);
+    setTimeout(finish, 4000);
+  })();
+</script>
 </body>
 </html>

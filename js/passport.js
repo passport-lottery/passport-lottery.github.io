@@ -114,9 +114,16 @@ var Passport = (function () {
     // url() внутри CSS-переменной браузер считает от css/style.css, а не от страницы,
     // поэтому передаём полный адрес файла
     var url = function (p) { return 'url("' + new URL(p, document.baseURI).href + '")'; };
-    if (t.cover) { html.style.setProperty('--cover-tex', url(t.cover)); html.classList.add('tex-cover'); }
-    if (t.emboss) { html.style.setProperty('--emboss-tex', url(t.emboss)); html.classList.add('tex-emboss'); }
-    if (t.paper) { html.style.setProperty('--paper-tex', url(t.paper)); html.classList.add('tex-paper'); }
+    // текстуру подставляем только целиком загруженной: на медленной сети обложка до этого
+    // остаётся ровного бордового цвета, а не прорисовывается кусками
+    var whenLoaded = function (p, fn) {
+      var i = new Image();
+      i.onload = function () { (i.decode ? i.decode() : Promise.resolve()).then(fn, fn); };
+      i.src = p;
+    };
+    if (t.cover) whenLoaded(t.cover, function () { html.style.setProperty('--cover-tex', url(t.cover)); html.classList.add('tex-cover'); });
+    if (t.emboss) whenLoaded(t.emboss, function () { html.style.setProperty('--emboss-tex', url(t.emboss)); html.classList.add('tex-emboss'); });
+    if (t.paper) whenLoaded(t.paper, function () { html.style.setProperty('--paper-tex', url(t.paper)); html.classList.add('tex-paper'); });
   }
 
   /* «Дыхание» закрытого паспорта: на ПК поворот вслед за курсором (±4°),
