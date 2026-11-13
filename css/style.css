@@ -123,9 +123,8 @@ audio{accent-color:var(--stamp-1)}
 .photo.photo-mark{background:none;border-radius:0}
 .photo.photo-mark img{object-fit:contain;mix-blend-mode:multiply}
 .mrz{margin-top:auto;font:400 9px/1.45 var(--mono);color:#3a423e;word-break:break-all;letter-spacing:.05em;background:rgba(255,255,255,.5);padding:6px;border-radius:3px}
-.notice-ru{margin-top:auto}
-.notice-en{color:var(--page-soft)}
-.notice-mark{margin-bottom:auto}
+/* оборот обложки: герб водяным знаком, бледный, «в толще» бумаги */
+.watermark{flex:1;margin:12% 6%;background:center/contain no-repeat;opacity:.13;mix-blend-mode:multiply}
 
 /* штампы */
 .stamp{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;cursor:pointer;

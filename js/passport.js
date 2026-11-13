@@ -33,7 +33,7 @@ var Passport = (function () {
   }
 
   function renderCover() {
-    var n = SITE.notice;
+    var wm = SITE.watermark;
     cover.innerHTML =
       '<div class="face front">' +
         '<div class="country">' + SITE.coverTop + '</div>' +
@@ -41,10 +41,7 @@ var Passport = (function () {
         '<div class="bottom"><div class="label">' + esc(SITE.coverLabel) + '</div><div class="chip" aria-hidden="true"></div></div>' +
       '</div>' +
       '<div class="face back">' +
-        '<div class="pghead"><span>Внимание</span><span>Notice</span></div>' +
-        '<p class="sec-p notice-ru">' + esc(n.ru) + '</p>' +
-        '<p class="sec-p notice-en" lang="en">' + esc(n.en) + '</p>' +
-        '<div class="visas notice-mark" aria-hidden="true">✦</div>' +
+        (wm ? '<div class="watermark" aria-hidden="true" style="background-image:url(\'' + esc(wm) + '\')"></div>' : '') +
       '</div>';
   }
 

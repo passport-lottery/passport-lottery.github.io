@@ -10,10 +10,9 @@ var SITE = {
   coverTop: 'Исследовательский проект<br>по обществознанию',
   title: 'Паспорт как лотерея жизни',
   coverLabel: 'Паспорт',
-  notice: {
-    ru: 'Этот документ никто не выбирал. Его выдали вместе с датой и местом рождения.',
-    en: 'This document was not chosen. It was issued together with a place of birth.'
-  },
+  // оборот обложки: водяной знак, как на защитной странице настоящего паспорта
+  // (исходник — сайт/исходники/герб-пмр.png; null — страница просто пустая)
+  watermark: 'assets/img/gerb-watermark.webp',
   holders: {
     initials: 'К·В',            // показывается, только если photo не задано
     photo: 'assets/img/emblem.webp',   // эмблема гимназии (исходник — сайт/исходники/эмблема-гимназии.png)
