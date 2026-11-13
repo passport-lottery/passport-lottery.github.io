@@ -15,8 +15,8 @@ var SITE = {
     en: 'This document was not chosen. It was issued together with a place of birth.'
   },
   holders: {
-    initials: 'К·В',            // позже заменить на совместное фото (см. README)
-    photo: null,               // например 'assets/img/holders.webp'
+    initials: 'К·В',            // показывается, только если photo не задано
+    photo: 'assets/img/holders.svg',   // рисованные фигуры без лиц: слева светло-русый, справа черноволосый
     surnames: ['Кузнецов', 'Васильев'],
     issued: 'Тирасполь, 2026',
     subject: 'Как гражданство при рождении решает, где учиться, работать и куда ехать',
